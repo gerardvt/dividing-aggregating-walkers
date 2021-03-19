@@ -27,8 +27,11 @@ PVector getTorusPosition (PVector position) {
   return pos;
 }
 
+void settings(){
+  size(ENV_SIZE, ENV_SIZE);
+}
+
 void setup () {
-  size(1024, 1024);
   background(0, 0, 0);
   walkers = new ArrayList<Walker>();
 
@@ -47,7 +50,7 @@ void setup () {
 
     float ang = random(0, TWO_PI);// da - PI;
     walkers.add(
-      new Walker(x, y, ang)
+      new Walker(x, y, ang, DEPOSIT_RATE, STEP_SIZE, TURN_ANGLE, TURN_CHANCES)
     );
   }
 }
@@ -69,7 +72,7 @@ void draw () {
     float r = random(0, 1);
     if (r < DIVISION_CHANCES) {
       float nAngle = w.ang + (DISCRETE_DIV_ANGLE ? round(random(0, 1))*2-1 : random(-1, 1)) * DIVISION_ANGLE;
-      Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle);
+      Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, DEPOSIT_RATE, STEP_SIZE, TURN_ANGLE, TURN_CHANCES);
       newWalkers.add(nWalker);
     }
 
