@@ -9,13 +9,16 @@ class WalkerNet {
   float terminationThreshold;
   float terminationChances;
   int numWalkers;
+  PVector boundingBoxUpperLeft;
+  PVector boundingBoxLowerRight;
 
   ArrayList<Walker> walkers;
 
   public WalkerNet (
     int numWalkers, float depositRate, float stepSize, float turnAngle, float turnChance,
     float divisionChances, float divisionAngle, boolean discreteDivisionAngle,
-    float terminationThreshold, float terminationChances
+    float terminationThreshold, float terminationChances,
+    PVector boundingBoxUpperLeft, PVector boundingBoxLowerRight
 ) {
 
     this.numWalkers = numWalkers;
@@ -28,6 +31,8 @@ class WalkerNet {
     this.discreteDivisionAngle = discreteDivisionAngle;
     this.terminationThreshold = terminationThreshold;
     this.terminationChances = terminationChances;
+    this.boundingBoxUpperLeft = boundingBoxUpperLeft.copy();
+    this.boundingBoxLowerRight = boundingBoxLowerRight.copy();
 
     this.walkers = new ArrayList<Walker>();
 
@@ -37,8 +42,16 @@ class WalkerNet {
         float x = cos(da) * distCenter + ENV_SIZE*.5;
         float y = sin(da) * distCenter + ENV_SIZE*.5;
 
+        PVector pos = new PVector(x,y);
+        pos = mapPositionInsideBoundingBox(pos);
+        x = pos.x;
+        y = pos.y;
+
+
         float ang = random(0, TWO_PI);// da - PI;
-        this.walkers.add(new Walker(x, y, ang, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances));
+        this.walkers.add(new Walker(x, y, ang, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances,
+                                    this.boundingBoxUpperLeft, this.boundingBoxLowerRight,
+                                    new PVector (random(0,1) * 255, random(0,1) * 255, random(0,1) * 255)));
     }
   }
   
@@ -53,7 +66,9 @@ class WalkerNet {
         float r = random(0, 1);
         if (r < this.divisionChances) {
         float nAngle = w.ang + (this.discreteDivisionAngle ? round(random(0, 1))*2-1 : random(-1, 1)) * this.divisionAngle;
-        Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances);
+        Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances,
+                            this.boundingBoxUpperLeft, this.boundingBoxLowerRight,
+                            new PVector (random(0,1) * 255, random(0,1) * 255, random(0,1) * 255));
         newWalkers.add(nWalker);
         }
 
@@ -65,11 +80,12 @@ class WalkerNet {
         this.walkers.add(w);
     }
 
-    // checks for dead walkers
+
     loadPixels();
     for (int i = walkers.size()-1; i >= 0; i--) {
         Walker w = walkers.get(i);
 
+        // Remove dead walkers from walkers list
         if (!w.isAlive()) {
           walkers.remove(i);
           continue;
@@ -79,7 +95,7 @@ class WalkerNet {
         // to do that we compute the "next" walker position
         PVector dir = new PVector(cos(w.ang), sin(w.ang));
         PVector npos = w.pos.copy().add(dir.mult(2 * this.stepSize));
-        npos = getTorusPosition(npos);
+        npos = mapPositionInsideBoundingBox(npos);
 
         // sample aggregate color
         int idx = int(npos.x) + int(npos.y) * ENV_SIZE;
@@ -97,4 +113,17 @@ class WalkerNet {
         }
     }
   }
+
+  PVector mapPositionInsideBoundingBox (PVector position) {
+    PVector pos = position.copy();
+
+    // If position falls outside bounding box, wrap around the x or y axis to com baack
+    // inside the bounding box on the other side.
+    if (pos.x < this.boundingBoxUpperLeft.x) pos.x = this.boundingBoxLowerRight.x + pos.x;
+    if (pos.x > boundingBoxLowerRight.x) pos.x %= (this.boundingBoxLowerRight.x -  this.boundingBoxUpperLeft.x);
+    if (pos.y < this.boundingBoxUpperLeft.y) pos.y = this.boundingBoxLowerRight.y + pos.y;
+    if (pos.y > boundingBoxLowerRight.y) pos.y = pos.y %= (this.boundingBoxLowerRight.y -  this.boundingBoxUpperLeft.y);
+    return pos;
+  }
+
 }
