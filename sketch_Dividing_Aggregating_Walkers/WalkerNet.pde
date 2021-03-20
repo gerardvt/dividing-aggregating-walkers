@@ -105,11 +105,11 @@ class WalkerNet {
         
         // kill the walker if it will run on some aggregate
         if (red > this.terminationThreshold * 255) {
-        this.walkers.remove(i);
         // draw its last step to fill the gap
         w.lastPos = w.pos;
         w.pos = npos;
         w.draw();
+        this.walkers.remove(i);
         }
     }
   }
