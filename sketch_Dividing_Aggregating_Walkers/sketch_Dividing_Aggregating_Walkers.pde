@@ -32,7 +32,10 @@ void settings(){
 
 void setup () {
   background(0, 0, 0);
-  walkerNet = new WalkerNet (NB_INITIAL_WALKERS, DEPOSIT_RATE, STEP_SIZE, TURN_ANGLE, TURN_CHANCES);
+  walkerNet = new WalkerNet (
+      NB_INITIAL_WALKERS, DEPOSIT_RATE, STEP_SIZE, TURN_ANGLE, TURN_CHANCES,
+      DIVISION_CHANCES, DIVISION_ANGLE, DISCRETE_DIV_ANGLE,
+      TERMINATION_THRESHOLD, TERMINATION_CHANCES);
 }
 
 void keyPressed() {
