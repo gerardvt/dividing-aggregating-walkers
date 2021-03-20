@@ -94,7 +94,7 @@ class WalkerNet {
         // turn the walker coordinates into an index to sample the environment color
         // to do that we compute the "next" walker position
         PVector dir = new PVector(cos(w.ang), sin(w.ang));
-        PVector npos = w.pos.copy().add(dir.mult(2 * this.stepSize));
+        PVector npos = w.pos.copy().add(dir.mult(this.stepSize));
         npos = mapPositionInsideBoundingBox(npos);
 
         // sample aggregate color
