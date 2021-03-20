@@ -42,6 +42,14 @@ void keyPressed() {
   }  
 }
 
+boolean running = false;
+void mousePressed() {
+  running = !running;
+}
+
 void draw () {
-  walkerNet.update();
+  // Suspend/resume running upon mouse clicks
+  if (running) {
+    walkerNet.update();
+  }
 }
