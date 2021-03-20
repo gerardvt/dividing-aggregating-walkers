@@ -8,6 +8,9 @@ class Walker {
   float turnChance;
   float terminationChances;
   boolean isTerminated;
+  float divisionChances;
+  float divisionAngle;
+  boolean discreteDivisionAngle;
   PVector boundingBoxUpperLeft;
   PVector boundingBoxLowerRight;
   PVector c;
@@ -16,6 +19,7 @@ class Walker {
         float x, float y, float ang, 
         float depositRate, float stepSize, float turnAngle, float turnChance,
         float terminationChances,
+        float divisionChances, float divisionAngle, boolean discreteDivisionAngle,
         PVector boundingBoxUpperLeft, PVector boundingBoxLowerRight,
         PVector c
         ) {
@@ -28,13 +32,19 @@ class Walker {
     this.turnChance = turnChance;
     this.terminationChances = terminationChances;
     this.isTerminated = false;
+    this.divisionChances = divisionChances;
+    this.divisionAngle = divisionAngle;
+    this.discreteDivisionAngle = discreteDivisionAngle;
     this.boundingBoxUpperLeft = boundingBoxUpperLeft.copy();
     this.boundingBoxLowerRight = boundingBoxLowerRight.copy();
     this.c = c.copy();
 
   }
   
-  void update () {
+
+  ArrayList<Walker> update () {
+    ArrayList<Walker> splitWalkers = new ArrayList<Walker>();
+
     // Walker only updates if it's still alive
     if (isAlive())
     {
@@ -56,8 +66,23 @@ class Walker {
       if (random(0, 1) < this.terminationChances) {
         this.isTerminated = true;
       }
-    }
 
+      // Decide if walker will self-split.
+      // In preparation for the planned feature where a walker
+      // might split into more than two walker (current and new one), we
+      // will return an array of Walkers and not a single new Walker. This also
+      // allows us to return an in the case the Walker does not split.
+      if ( random(0, 1) < this.divisionChances) {
+        float newAngle = this.ang + (this.discreteDivisionAngle ? round(random(0, 1))*2-1 : random(-1, 1)) * this.divisionAngle;
+        Walker newWalker = new Walker(this.pos.x, this.pos.y, newAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances,
+                            this.divisionChances, this.divisionAngle, this.discreteDivisionAngle,
+                            this.boundingBoxUpperLeft, this.boundingBoxLowerRight,
+                            c.copy());
+        splitWalkers.add(newWalker);
+      }
+    }
+    
+    return splitWalkers;
   }
   
   void draw () {

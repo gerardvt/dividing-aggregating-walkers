@@ -50,6 +50,7 @@ class WalkerNet {
 
         float ang = random(0, TWO_PI);// da - PI;
         this.walkers.add(new Walker(x, y, ang, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances,
+                                    this.divisionChances, this.divisionAngle, this.discreteDivisionAngle,
                                     this.boundingBoxUpperLeft, this.boundingBoxLowerRight,
                                     new PVector (random(0,1) * 255, random(0,1) * 255, random(0,1) * 255)));
     }
@@ -60,17 +61,11 @@ class WalkerNet {
 
     for (Walker w : this.walkers) {
         // 1. walking step
-        w.update();
+        ArrayList<Walker> splitWalkers = w.update();
 
         // 2. division step
-        float r = random(0, 1);
-        if (r < this.divisionChances) {
-        float nAngle = w.ang + (this.discreteDivisionAngle ? round(random(0, 1))*2-1 : random(-1, 1)) * this.divisionAngle;
-        Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances,
-                            this.boundingBoxUpperLeft, this.boundingBoxLowerRight,
-                            new PVector (random(0,1) * 255, random(0,1) * 255, random(0,1) * 255));
-        newWalkers.add(nWalker);
-        }
+        // Add any split Walkers returned from Walker to new Walker list.
+        newWalkers.addAll(splitWalkers);
 
         w.draw();
     }
