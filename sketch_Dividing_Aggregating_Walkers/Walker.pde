@@ -6,10 +6,13 @@ class Walker {
   float stepSize;
   float turnAngle;
   float turnChance;
-  
+  float terminationChances;
+  boolean isTerminated;
+
   public Walker (
         float x, float y, float ang, 
-        float depositRate, float stepSize, float turnAngle, float turnChance
+        float depositRate, float stepSize, float turnAngle, float turnChance,
+        float terminationChances
         ) {
     this.lastPos = new PVector(x, y);
     this.pos = new PVector(x, y);
@@ -18,33 +21,53 @@ class Walker {
     this.stepSize = stepSize;
     this.turnAngle = turnAngle;
     this.turnChance = turnChance;
+    this.terminationChances = terminationChances;
+    this.isTerminated = false;
   }
   
   void update () {
-    lastPos = pos.copy();
+    // Walker only updates if it's still alive
+    if (isAlive())
+    {
+      lastPos = pos.copy();
 
-    // the walker has a random chances to turn
-    if (random(0, 1) < this.turnChance) {
-      this.ang+= this.turnAngle * (round(random(0, 1)) * 2. - 1.);
-    }
+      // the walker has a random chances to turn
+      if (random(0, 1) < this.turnChance) {
+        this.ang+= this.turnAngle * (round(random(0, 1)) * 2. - 1.);
+      }
 
-    // move along the direction
-    PVector dir = new PVector(cos(ang), sin(ang));
-    pos.add(dir.mult(this.stepSize));
-    
-    // makes sure that the walkers stays within the window area
-    pos = getTorusPosition(pos);
+      // move along the direction
+      PVector dir = new PVector(cos(ang), sin(ang));
+      pos.add(dir.mult(this.stepSize));
+      
+      // makes sure that the walkers stays within the window area
+      pos = getTorusPosition(pos);
+
+      // After this update, walker can self terminate based on its terminationChances
+      if (random(0, 1) < this.terminationChances) {
+        this.isTerminated = true;
+      }
+      }
+
   }
   
   void draw () {
-    stroke(255, int(255. * this.depositRate));
-    strokeWeight(1);
-    
-    // if the line is too long (because of torus world), we shorthen it
-    PVector line = lastPos.copy().sub(pos);
+    // Walker only draws if it's still alive
+    if (isAlive()) {
+      stroke(255, int(255. * this.depositRate));
+      strokeWeight(1);
+      
+      // if the line is too long (because of torus world), we shorthen it
+      PVector line = lastPos.copy().sub(pos);
 
-    if (line.mag() < 4*this.stepSize) {
-      line(lastPos.x, lastPos.y, pos.x, pos.y);
+      if (line.mag() < 4*this.stepSize) {
+        line(lastPos.x, lastPos.y, pos.x, pos.y);
+      }
     }
+  }
+
+  boolean isAlive()
+  {
+    return ! this.isTerminated;
   }
 }

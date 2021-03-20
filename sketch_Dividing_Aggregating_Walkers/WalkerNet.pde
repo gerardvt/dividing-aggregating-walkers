@@ -38,7 +38,7 @@ class WalkerNet {
         float y = sin(da) * distCenter + ENV_SIZE*.5;
 
         float ang = random(0, TWO_PI);// da - PI;
-        this.walkers.add(new Walker(x, y, ang, this.depositRate, this.stepSize, this.turnAngle, this.turnChance));
+        this.walkers.add(new Walker(x, y, ang, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances));
     }
   }
   
@@ -53,7 +53,7 @@ class WalkerNet {
         float r = random(0, 1);
         if (r < this.divisionChances) {
         float nAngle = w.ang + (this.discreteDivisionAngle ? round(random(0, 1))*2-1 : random(-1, 1)) * this.divisionAngle;
-        Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance);
+        Walker nWalker = new Walker(w.pos.x, w.pos.y, nAngle, this.depositRate, this.stepSize, this.turnAngle, this.turnChance, this.terminationChances);
         newWalkers.add(nWalker);
         }
 
@@ -70,10 +70,9 @@ class WalkerNet {
     for (int i = walkers.size()-1; i >= 0; i--) {
         Walker w = walkers.get(i);
 
-        float r = random(0, 1);
-        if (r < this.terminationChances) {
-        walkers.remove(i);
-        continue;
+        if (!w.isAlive()) {
+          walkers.remove(i);
+          continue;
         }
 
         // turn the walker coordinates into an index to sample the environment color
